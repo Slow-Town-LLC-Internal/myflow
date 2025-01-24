@@ -1,0 +1,13 @@
+# .dockerignore
+node_modules/
+.git/
+.env*
+*.md
+.next/
+out/
+data/
+tmp/
+.vscode/
+.idea/
+*.log
+*.swp

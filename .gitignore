@@ -1,0 +1,35 @@
+# .gitignore
+# Dependencies
+node_modules/
+.next/
+.swc/
+
+# Build
+out/
+build/
+dist/
+
+# Environment
+.env*
+.aws/
+.kube/
+*.pem
+*.key
+
+# System
+.DS_Store
+*.log
+*.swp
+.idea/
+.vscode/
+
+# Local data
+data/
+tmp/
+*.local
+
+
+# node_modules
+node_modules/
+.next/
+dist/
