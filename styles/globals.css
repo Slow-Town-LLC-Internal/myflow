@@ -1,6 +1,41 @@
+/* styles/globals.css */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600&display=swap');
 
-
-// styles/globals.css
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  --color-bg: #F5F5F5;
+  --color-text: #2C3E50;
+  --color-primary: #A67F78;
+  --color-secondary: #D4B2A7;
+  --color-accent: #857E7B;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: 'Noto Sans', system-ui, -apple-system, sans-serif;
+}
+
+
+.docs-content h1 {
+  @apply text-4xl font-bold text-slate-900 mb-8;
+}
+
+.docs-content h2 {
+  @apply text-2xl font-semibold text-slate-800 mt-8 mb-4;
+}
+
+.callout {
+  @apply p-4 my-4 rounded-lg;
+}
+
+.callout-note {
+  @apply bg-blue-50 text-blue-900;
+}
+
+.callout-warning {
+  @apply bg-amber-50 text-amber-900;
+}
