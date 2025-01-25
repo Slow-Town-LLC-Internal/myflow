@@ -1,6 +1,73 @@
-
-
-// styles/globals.css
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&display=swap');
+
+@layer base {
+  :root {
+    --color-background: theme('colors.morandi-light.background');
+    --color-text: theme('colors.morandi-light.text');
+    --color-primary: theme('colors.morandi-light.primary');
+    --color-secondary: theme('colors.morandi-light.secondary');
+    --color-border: theme('colors.morandi-light.border');
+
+    --font-inter: 'Inter', sans-serif;
+    --font-fira-code: 'Fira Code', monospace;
+  }
+
+  .dark {
+    --color-background: theme('colors.morandi-dark.background');
+    --color-text: theme('colors.morandi-dark.text');
+    --color-primary: theme('colors.morandi-dark.primary');
+    --color-secondary: theme('colors.morandi-dark.secondary');
+    --color-border: theme('colors.morandi-dark.border');
+  }
+
+  body {
+    @apply bg-[var(--color-background)] text-[var(--color-text)] font-sans; /* Default body styles */
+    color-scheme: light dark;
+    font-family: var(--font-inter); /* Set default font to Inter */
+    line-height: 1.6; /* Improve readability */
+  }
+
+  h1 { @apply text-4xl font-bold mt-6 mb-4 text-[var(--color-primary)]; }
+  h2 { @apply text-3xl font-semibold mt-5 mb-3 text-[var(--color-primary)]; }
+  h3 { @apply text-2xl font-semibold mt-4 mb-2 text-[var(--color-primary)]; }
+  h4 { @apply text-xl font-semibold mt-3 mb-1 text-[var(--color-primary)]; }
+  h5 { @apply text-lg font-semibold mt-2 mb-1 text-[var(--color-primary)]; }
+  h6 { @apply text-base font-semibold mt-1 mb-1 text-[var(--color-primary)]; }
+
+  p { @apply mb-3; }
+
+  a {
+    @apply text-[var(--color-primary)] underline hover:no-underline; /* Primary color for links */
+  }
+
+  strong { @apply font-semibold; }
+  em { @apply italic; }
+
+  /* Code Blocks and Inline Code */
+  pre {
+    @apply font-mono bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100 p-4 rounded-md overflow-x-auto text-sm; /* Code block styles */
+    font-family: var(--font-fira-code); /* Set font to Fira Code for <pre> */
+  }
+
+  code {
+    @apply font-mono bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100 px-1.5 py-0.5 rounded-md text-sm; /* Inline code styles */
+    font-family: var(--font-fira-code); /* Set font to Fira Code for `code` */
+  }
+
+  /* Lists */
+  ul { @apply list-disc pl-5 mb-3; }
+  ol { @apply list-decimal pl-5 mb-3; }
+  li { @apply mb-1; }
+
+  blockquote {
+    @apply border-l-4 border-[var(--color-primary)] pl-4 italic mb-4; /* Example blockquote style */
+    color: var(--color-secondary); /* Use secondary color for blockquote text */
+  }
+
+  hr { @apply border-t border-[var(--color-border)] my-6; } /* Horizontal rule */
+}
