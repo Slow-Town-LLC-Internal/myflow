@@ -70,4 +70,27 @@
   }
 
   hr { @apply border-t border-[var(--color-border)] my-6; } /* Horizontal rule */
-}
+  }
+  .docs-content h1 {
+    @apply text-4xl font-bold text-slate-900 mb-8;
+  }
+
+  .docs-content h2 {
+    @apply text-2xl font-semibold text-slate-800 mt-8 mb-4;
+  }
+
+  .prose {
+    @apply dark:prose-invert;
+  }
+
+  .callout {
+    @apply p-4 my-4 rounded-lg;
+  }
+
+  .callout-note {
+    @apply bg-blue-50 dark:bg-blue-900/30 text-blue-900 dark:text-blue-100;
+  }
+
+  .callout-warning {
+    @apply bg-amber-50 dark:bg-amber-900/30 text-amber-900 dark:text-amber-100;
+  }
