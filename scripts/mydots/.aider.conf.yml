@@ -1,0 +1,11 @@
+read: CONVENTIONS.md
+model: gemini/gemini-2.0-flash-thinking-exp
+# model: gemini/gemini-1.5-flash-latest
+# model: vertex_ai-mistral_models/vertex_ai/codestral@latest
+# #model: vertex_ai/claude-3-5-sonnet@20240620
+no-git: true
+no-auto-commits: true
+dry-run: true
+dark-mode: true
+chat-mode: architect
+analytics-disable: true
