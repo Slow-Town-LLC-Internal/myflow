@@ -1,0 +1,11 @@
+[init]
+	defaultBranch = main
+[core]
+	excludefile = ~/.gitignore
+	filemode = false
+	editor = vim
+[pull]
+	rebase = false
+[credential "https://github.com"]
+	helper =
+	helper = !/usr/bin/gh auth git-credential

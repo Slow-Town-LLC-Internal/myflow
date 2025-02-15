@@ -33,7 +33,7 @@ setup_env() {
 # Install basic development tools
 install_basic_tools() {
     if [[ "$PACKAGE_MANAGER" == "brew" ]]; then
-        $INSTALL_CMD bash-completion@2 fzf ripgrep fd bat neovim tmux git gh tree dict jq glow
+        $INSTALL_CMD bash-completion@2 fzf ripgrep fd bat neovim tmux git gh tree dict jq
         $INSTALL_CMD terraform google-cloud-cli awscli kubernetes-cli podman
         $INSTALL_CASK_CMD visual-studio-code google-chrome virtualbox vagrant
     else
@@ -72,6 +72,11 @@ setup_languages() {
         sudo tar -C /usr/local -xzf "go${GO_VERSION}.linux-amd64.tar.gz"
         rm -f "go${GO_VERSION}.linux-amd64.tar.gz"
     fi
+
+    go install github.com/charmbracelet/glow@latest
+    go install github.com/adamryman/tcpterm@latest
+    go install golang.org/x/tools/gopls@latest
+    go install github.com/ipinfo/cli/ipinfo@latest
 
     # Node.js
     if [[ "$PACKAGE_MANAGER" == "brew" ]]; then
@@ -145,6 +150,7 @@ setup_db() {
       sudo systemctl restart postgresql
     fi
 }
+
 # OS-specific configurations
 os_specific_config() {
     if [[ "$PACKAGE_MANAGER" == "brew" ]]; then
@@ -185,6 +191,7 @@ main() {
     setup_languages
     setup_dotfiles
     setup_python_venv
+    setup_db
     os_specific_config
 
     echo "Installation complete! Please:"
