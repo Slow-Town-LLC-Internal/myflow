@@ -27,22 +27,27 @@ setup_env() {
 
         # Update package list
         sudo apt-get update
+
+
     fi
 }
 
 # Install basic development tools
 install_basic_tools() {
     if [[ "$PACKAGE_MANAGER" == "brew" ]]; then
-        $INSTALL_CMD bash-completion@2 fzf ripgrep fd bat neovim tmux git gh tree dict jq
+        $INSTALL_CMD bash-completion@2 fzf ripgrep fd bat neovim tmux git gh tree dict jq act
         $INSTALL_CMD terraform google-cloud-cli awscli kubernetes-cli podman
         $INSTALL_CASK_CMD visual-studio-code google-chrome virtualbox vagrant
     else
-        $INSTALL_CMD neovim tmux git curl ripgrep fd-find tree dict jq bat fzf imagemagick
+        $INSTALL_CMD neovim tmux git curl ripgrep fd-find tree dict jq bat fzf imagemagick dnsutils tcpdump
         $INSTALL_CMD build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev
         $INSTALL_CMD libsqlite3-dev libncursesw5-dev xz-utils tk-dev libxml2-dev
         $INSTALL_CMD libxmlsec1-dev libffi-dev liblzma-dev
         $INSTALL_CMD google-cloud-cli terraform podman buildah skopeo
         $INSTALL_CMD bash-completion
+
+        # adding additional tools
+        curl https://raw.githubusercontent.com/nektos/act/master/install.sh | sudo bash
     fi
 }
 
