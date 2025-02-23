@@ -1,7 +1,7 @@
 #!/bin/bash
 
 set -e  # Exit on error
-
+``
 log() {
     echo "[INFO] $1"
 }
