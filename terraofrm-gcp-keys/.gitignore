@@ -1,0 +1,35 @@
+# Terraform files
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+terraform.tfvars
+.terraformrc
+terraform.rc
+
+# Terraform logs
+tf-output.log
+*.log
+
+# Environment files
+.env
+.env.*
+encrypted_secrets.txt
+
+# Go binaries and build files
+kms-manager
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Go test files
+*.test
+*.out
+
+# Go workspace files
+go.work
+
+# IDE and editor files
+.idea/
