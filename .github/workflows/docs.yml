@@ -3,18 +3,17 @@ name: Generate and Deploy Documentation
 on:
   push:
     branches:
-      - main  # or your default branch
+      - main
     paths:
       - 'docs/**'
       - 'cmd/doc-generator/**'
-  workflow_dispatch:  # Allow manual triggering
+  workflow_dispatch:
 
 permissions:
   contents: read
   pages: write
   id-token: write
 
-# Allow only one concurrent deployment
 concurrency:
   group: "pages"
   cancel-in-progress: true
@@ -41,6 +40,24 @@ jobs:
         run: |
           cd cmd/doc-generator
           ./doc-generator -root ${{ github.workspace }}
+
+      - name: Reorganize static files
+        run: |
+          # Create myflow directory if it doesn't exist
+          mkdir -p public/myflow
+          
+          # Move static assets into myflow directory
+          mv public/css public/myflow/
+          mv public/js public/myflow/
+          mv public/images public/myflow/
+          
+          # Move index.html to myflow directory if it's not already there
+          if [ -f public/index.html ]; then
+            mv public/index.html public/myflow/index.html
+          fi
+          
+          # Create a redirect at root
+          echo '<meta http-equiv="refresh" content="0;url=myflow/">' > public/index.html
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
