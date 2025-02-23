@@ -39,29 +39,21 @@ jobs:
       - name: Generate documentation
         run: |
           cd cmd/doc-generator
-          ./doc-generator -root ${{ github.workspace }} -base-url /myflow
+          # Remove the -base-url flag since we're handling the path physically
+          ./doc-generator -root ${{ github.workspace }}
 
-      - name: Reorganize static files
+      - name: Setup static files
         run: |
-          # Create base directories
-          mkdir -p public/myflow
-          mkdir -p public/myflow/css
-          mkdir -p public/myflow/js
-          mkdir -p public/myflow/images
+          # Create directories if they don't exist
+          mkdir -p public/css
+          mkdir -p public/js
+          mkdir -p public/images
 
-          # Move static assets if they exist
-          [ -d public/css ] && mv public/css/* public/myflow/css/ 2>/dev/null || true
-          [ -d public/js ] && mv public/js/* public/myflow/js/ 2>/dev/null || true
-          [ -d public/images ] && mv public/images/* public/myflow/images/ 2>/dev/null || true
-
-          # Move index.html if it exists
-          [ -f public/index.html ] && mv public/index.html public/myflow/index.html
-
-          # Create root redirect
-          echo '<meta http-equiv="refresh" content="0;url=myflow/">' > public/index.html
-
-          # Clean up empty directories
-          rm -rf public/css public/js public/images 2>/dev/null || true
+          # Move files if they exist (without the myflow subdirectory)
+          [ -f public/index.html ] || touch public/index.html
+          
+          # No need to create a redirect since we're at the root level
+          ls -la public/
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
