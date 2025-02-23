@@ -1,6 +1,9 @@
 package main
 
-import "html/template"
+import (
+	"html/template"
+	"path/filepath"
+)
 
 // FrontMatter represents the YAML metadata at the top of markdown files
 type FrontMatter struct {
@@ -33,6 +36,14 @@ type Site struct {
 	NavTree     []NavItem
 	Config      SiteConfig
 	CurrentPage Page
+}
+
+// AssetPath returns the correct path for assets considering the base URL
+func (s Site) AssetPath(path string) string {
+	if s.Config.BaseURL == "" {
+		return path
+	}
+	return filepath.Join(s.Config.BaseURL, path)
 }
 
 // NavItem represents an item in the navigation tree

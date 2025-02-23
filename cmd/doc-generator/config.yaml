@@ -1,6 +1,6 @@
 siteName: "Flowing doc"
 description: "Very random and flowing docs"
-baseURL: "myflow"
+baseURL: ""
 githubRepo: "Slow-Town-LLC-Internal/myflow"
 defaultOrder:
   - "Informations générales"
