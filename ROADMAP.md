@@ -1,30 +1,43 @@
-## ROADMAP
+# ROADMAP
 
-### Features in Development
+## Current Focus
+- **Documentation Site Enhancement**
+  - ✅ Basic static site generator in Go
+  - ✅ GitHub Pages deployment workflow
+  - 🔄 Custom domain setup and SSL
+  - 🔄 Navigation and search improvements
 
-*   ~~Basic website structure and initial content setup~~ (Completed in previous iterations)
-*   ~~Basic styling with tailwindcss~~ (Completed in previous iterations)
-*   **Improved website styling with Morandi color palette (Current - In Progress, now nearing completion)**
-    *   Implement Morandi greenish color palette for light and dark modes. **(Completed)**
-    *   Set default fonts (Inter for text, Fira Code for code). **(Completed)**
-    *   Apply default styles for common HTML elements in `global.css`. **(Completed)**
-*   Clean up and organize configuration files and `pages/` directory. **(Next Step)**
+## Next Steps (Q1 2025)
 
-### Next Milestones
+### Development Environment
+- [ ] Research ARM64 support for development environment
+- [ ] Alternative to Vagrant for macOS M-series chips
+- [ ] Streamline Docker-based development setup
+- [ ] Integrate common development tools configuration
 
-*   Enable dark mode toggle for website.
-*   Add navigation bar with links to different sections of the documentation.
-*   Add display the scripts in scripts folder with proper code highlighting.
-*   Implement search functionality for documentation.
-*   Add versioning for documentation. (with github commits)
-*   Review and refine website content for clarity and accuracy.
+### Go Utilities
+- [ ] Enhance cluster-switcher
+  - Add context management
+  - Improve configuration handling
+- [ ] Expand doc-generator features
+  - Search functionality
+  - Dark mode support
+  - Version tracking with git commits
+- [ ] New utility: config-manager
+  - Central configuration management
+  - Version control for dotfiles
+  - Cross-platform support
 
-### Future Ideas
+### Documentation
+- [ ] Migrate configuration guides from separate repos
+- [ ] Add automation scripts documentation
+- [ ] Create tool usage guides
+- [ ] Implement versioned documentation
 
-*   Explore potential interactive elements or components for enhanced user experience.
-*   Expand documentation to cover more advanced topics and use cases.
-*   Create tutorials and example projects.
-*   Consider i18n support for internationalization.
+## Future Considerations
+- Integration with existing development workflows
+- Configuration templating system
+- Cross-platform testing framework
+- Container image optimization
 
----
-*Status: Current focus is on finalizing the styling and structure of the documentation website before merging to `main` branch.*
+*Note: This roadmap is subject to change based on priorities and resource availability.*

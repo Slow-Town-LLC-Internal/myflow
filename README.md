@@ -1,78 +1,51 @@
-# README.md
-# DailyFlow - Personal Workflow Manager
+# MyFlow - Development Workflow Tools
 
-A personal workflow management system for engineers, focusing on daily task logging, script management, and documentation.
+A collection of development workflow tools and documentation, focusing on Go utilities, development environment setup, and technical documentation.
 
-## Features
-- Daily work logging in markdown format
-- Centralized script management for AWS, GCP, and system tasks
-- Documentation site using Markdoc
-- Configuration management for development tools
-- Cross-platform support (Ubuntu/MacOS)
-
-## Prerequisites
-- Node.js >= 18
-- Python >= 3.10
-- Go >= 1.20
-- AWS CLI v2.22+
-- Terraform >= 1.5
-- Vim/VSCode
-- Kitty terminal
+## Components
+- **doc-generator**: A static site generator for markdown documentation
+- **cluster-switcher**: Kubernetes cluster management utility
+- **terraform-gcp-keys**: GCP key management tool
+- Development environment setup using Docker Compose
 
 ## Quick Start
-1. Clone repository and setup markdoc
-```
-git clone git@github.com:Slow-Town-LLC-Internal/myflow.git
-cd myflow
-npm install
-npm install @markdoc/markdoc @markdoc/next.js next react react-dom
-npm run dev
-```
-3. Access docs at http://localhost:3000
 
-## Security
-- No sensitive information stored in repository
-- AWS credentials managed via AWS SSO
-- Environment variables stored in ~/.env (not tracked)
-
-
-# future directory structure
-
-
+### Documentation Site
+```bash
+cd cmd/doc-generator
+go build
+./doc-generator -root /path/to/repo
 ```
 
+### Development Environment
+```bash
+cd scripts/docker-dev
+docker-compose up -d
+```
+
+## Project Structure
+```
 myflow/
-├── README.md
-├── ROADMAP.md
-├── docs/
-│   ├── index.md
-│   ├── worklogs/
-│   │   └── 2024/
-│   │       └── january.md
-│   └── guides/
-│       ├── setup.md
-│       └── scripts.md
-├── scripts/
-│   ├── aws/
-│   │   ├── eks-utils.sh
-│   │   └── rds-utils.sh
-│   ├── gcp/
-│   ├── system/
-│   │   ├── backup.sh
-│   │   └── setup.sh
-│   └── terraform/
-│       └── modules/
-├── configs/
-│   ├── vim/
-│   │   └── .vimrc
-│   ├── kitty/
-│   │   └── kitty.conf
-│   └── git/
-│       └── .gitignore
-├── ansible/
-│   ├── inventory/
-│   └── playbooks/
-├── package.json
-└── .gitignore
-
+├── cmd/                    # Go utilities
+│   ├── doc-generator/      # Static site generator
+│   ├── cluster-switcher/   # K8s cluster management
+│   └── terraform-gcp-keys/ # GCP key management
+├── docs/                   # Documentation content
+│   ├── about.md
+│   └── worklogs/          # Work logs by date
+├── scripts/               
+│   └── docker-dev/        # Development environment setup
 ```
+
+## Prerequisites
+- Go >= 1.22
+- Docker & Docker Compose
+- Git
+
+## Contributing
+1. Clone the repository
+2. Create a feature branch
+3. Submit a pull request
+
+## License
+MIT License
