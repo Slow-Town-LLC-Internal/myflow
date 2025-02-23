@@ -1,0 +1,8 @@
+siteName: "Flowing doc"
+description: "Very random and flowing docs"
+baseURL: "myflow"
+githubRepo: "Slow-Town-LLC-Internal/myflow"
+defaultOrder:
+  - "Informations générales"
+  - "Français"
+  - "Musique"

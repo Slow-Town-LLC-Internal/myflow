@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.user.multipass-manager</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/arbeitandy/go/bin/multipass-manager</string>
+    </array>
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/Users/arbeitandy/go/bin</string>
+        <key>HOME</key>
+        <string>/Users/arbeitandy</string>
+    </dict>
+    <key>UserName</key>
+    <string>arbeitandy</string>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <dict>
+        <key>SuccessfulExit</key>
+        <false/>
+    </dict>
+    <key>StandardErrorPath</key>
+    <string>/Users/arbeitandy/Library/Logs/multipass-manager.err</string>
+    <key>StandardOutPath</key>
+    <string>/Users/arbeitandy/Library/Logs/multipass-manager.log</string>
+    <key>Debug</key>
+    <true/>
+    <key>WorkingDirectory</key>
+    <string>/Users/arbeitandy</string>
+</dict>
+</plist>

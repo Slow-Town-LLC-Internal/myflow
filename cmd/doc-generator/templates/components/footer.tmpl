@@ -1,0 +1,16 @@
+{{ define "footer" }}
+<footer class="content-footer">
+    <div class="footer-content">
+        <div class="footer-info">
+            <span class="copyright">{{ .Config.SiteName }} &copy; {{ now.Format "2006" }} Pezware </span>
+            <span class="build-info">Last updated: {{ now.Format "January 2, 2006" }}</span>
+        </div>
+        <div class="footer-links">
+            <a href="/about" class="footer-link">About</a>
+        </div>
+        <div class="version-info">
+            <span>Version 1.0.0</span>
+        </div>
+    </div>
+</footer>
+{{ end }}
