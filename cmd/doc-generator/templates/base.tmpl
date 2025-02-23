@@ -6,9 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ .CurrentPage.Title }} - {{ .Config.SiteName }}</title>
     <meta name="description" content="{{ if .CurrentPage.Description }}{{ .CurrentPage.Description }}{{ else }}{{ .Config.Description }}{{ end }}">
-    <link rel="stylesheet" href="/css/styles.css">
-    <link rel="stylesheet" href="/css/prism.css">
-    <link rel="icon" href="/favicon.ico">
+    <link rel="stylesheet" href="{{ assetPath "/css/styles.css" }}">
+    <link rel="stylesheet" href="{{ assetPath "/css/prism.css" }}">
+    <link rel="icon" href="{{ assetPath "/favicon.ico" }}">
 </head>
 <body>
     <div class="page-container">
@@ -42,40 +42,8 @@
         </div>
     </div>
 
-    <script src="/js/prism.js"></script>
-    <script src="/js/main.js"></script>
-</body>
-</html>
-{{ end }}
-
-{{ define "404" }}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Page Not Found - {{ .Config.SiteName }}</title>
-    <meta name="description" content="Page not found">
-    <link rel="stylesheet" href="/css/styles.css">
-    <link rel="icon" href="/favicon.ico">
-</head>
-<body>
-    <div class="page-container">
-        {{ template "sidebar" . }}
-
-        <div class="content-wrapper">
-            <main class="content not-found">
-                <div class="not-found-container">
-                    <h1>404</h1>
-                    <h2>Page Not Found</h2>
-                    <p>The page you're looking for doesn't exist or has been moved.</p>
-                    <a href="/" class="button">Go Home</a>
-                </div>
-            </main>
-        </div>
-    </div>
-
-    <script src="/js/main.js"></script>
+    <script src="{{ assetPath "/js/prism.js" }}"></script>
+    <script src="{{ assetPath "/js/main.js" }}"></script>
 </body>
 </html>
 {{ end }}

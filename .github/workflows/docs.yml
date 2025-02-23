@@ -39,23 +39,24 @@ jobs:
       - name: Generate documentation
         run: |
           cd cmd/doc-generator
-          ./doc-generator -root ${{ github.workspace }}
+          ./doc-generator -root ${{ github.workspace }} -base-url /myflow
+
 
       - name: Reorganize static files
         run: |
           # Create myflow directory if it doesn't exist
           mkdir -p public/myflow
-          
+
           # Move static assets into myflow directory
           mv public/css public/myflow/
           mv public/js public/myflow/
           mv public/images public/myflow/
-          
+
           # Move index.html to myflow directory if it's not already there
           if [ -f public/index.html ]; then
             mv public/index.html public/myflow/index.html
           fi
-          
+
           # Create a redirect at root
           echo '<meta http-equiv="refresh" content="0;url=myflow/">' > public/index.html
 
