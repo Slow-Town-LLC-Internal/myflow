@@ -52,8 +52,16 @@ install_basic_tools() {
     log "Installing basic development tools..."
     if [[ "$PACKAGE_MANAGER" == "brew" ]]; then
         $INSTALL_CMD bash-completion@2 fzf ripgrep fd bat neovim tmux git gh tree dict jq
-        $INSTALL_CMD terraform google-cloud-cli awscli kubernetes-cli podman
-        $INSTALL_CASK_CMD visual-studio-code google-chrome virtualbox vagrant
+        $INSTALL_CMD terraform google-cloud-cli awscli kubernetes-cli docker colima
+        $INSTALL_CASK_CMD visual-studio-code google-chrome vagrant
+        vagrant plugin install vagrant-qemu
+        vagrant plugin install vagrant-libvirt
+        # still need manually make these changes
+        # sudo virt-manager
+        # sudo echo '/Users -alldirs -mapall=$(id -u):$(id -g) localhost' >> /etc/exports
+        # sudo nfsd restart
+        docker context create vagrant --docker "host=tcp://localhost:2375"
+        docker context use vagrant
     else
         $INSTALL_CMD neovim tmux git curl ripgrep fd-find tree dict jq bat fzf imagemagick
         $INSTALL_CMD build-essential libssl-dev zlib1g-dev libbz2-dev libreadline-dev
@@ -99,7 +107,6 @@ setup_languages() {
     fi
 
     go install github.com/charmbracelet/glow@latest
-    go install github.com/adamryman/tcpterm@latest
     go install golang.org/x/tools/gopls@latest
     go install github.com/ipinfo/cli/ipinfo@latest
 

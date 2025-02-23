@@ -1,0 +1,81 @@
+{{ define "base" }}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ .CurrentPage.Title }} - {{ .Config.SiteName }}</title>
+    <meta name="description" content="{{ if .CurrentPage.Description }}{{ .CurrentPage.Description }}{{ else }}{{ .Config.Description }}{{ end }}">
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="/css/prism.css">
+    <link rel="icon" href="/favicon.ico">
+</head>
+<body>
+    <div class="page-container">
+        {{ template "sidebar" . }}
+
+        <div class="content-wrapper">
+            <header class="content-header">
+                {{ template "breadcrumb" .CurrentPage.Breadcrumb }}
+
+                <div class="doc-actions">
+                    {{ if .Config.GithubRepo }}
+                    <a href="https://github.com/{{ .Config.GithubRepo }}/edit/main/content/{{ .CurrentPage.RelPath }}"
+                       class="edit-link" target="_blank" rel="noopener">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M11 4H4V20H20V13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M18.5 2.5L21.5 5.5L12 15H9V12L18.5 2.5Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        Edit this page
+                    </a>
+                    {{ end }}
+                </div>
+            </header>
+
+            <main class="content">
+                <div class="content-container">
+                    {{ .CurrentPage.Content }}
+                </div>
+            </main>
+
+            {{ template "footer" . }}
+        </div>
+    </div>
+
+    <script src="/js/prism.js"></script>
+    <script src="/js/main.js"></script>
+</body>
+</html>
+{{ end }}
+
+{{ define "404" }}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page Not Found - {{ .Config.SiteName }}</title>
+    <meta name="description" content="Page not found">
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="icon" href="/favicon.ico">
+</head>
+<body>
+    <div class="page-container">
+        {{ template "sidebar" . }}
+
+        <div class="content-wrapper">
+            <main class="content not-found">
+                <div class="not-found-container">
+                    <h1>404</h1>
+                    <h2>Page Not Found</h2>
+                    <p>The page you're looking for doesn't exist or has been moved.</p>
+                    <a href="/" class="button">Go Home</a>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="/js/main.js"></script>
+</body>
+</html>
+{{ end }}
