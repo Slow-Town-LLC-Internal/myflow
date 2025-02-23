@@ -33,3 +33,5 @@ tmp/
 node_modules/
 .next/
 dist/
+
+public/

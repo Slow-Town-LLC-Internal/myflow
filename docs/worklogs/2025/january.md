@@ -4,10 +4,6 @@ title: 2025-01
 description: Worklog for January 2025
 ---
 
-{% callout type="note" %}
-MyFlow extends Markdoc to create a complete DevOps workflow system.
-{% /callout %}
-
 ## Roadmap
 - **proj1**: myflow
 - **proj2**: placeholder
@@ -21,7 +17,3 @@ MyFlow extends Markdoc to create a complete DevOps workflow system.
 - Basic scripting framework
 - Container templates
 
-
-{% callout type="check" %}
-Access documentation at `http://localhost:3000`
-{% /callout %}
