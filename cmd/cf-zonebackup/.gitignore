@@ -1,0 +1,38 @@
+# Binary files
+cf-zonebackup
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Go specific
+*.test
+*.out
+go.work
+
+# Config files (may contain sensitive information)
+config.yaml
+cloudflare.yaml
+*.yaml
+
+# Export directories and files
+cloudflare-export/
+*.zone
+*.json
+
+# OS specific
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Editor directories and files
+.idea
+.vscode
+*.swp
+*.swo
+*~
