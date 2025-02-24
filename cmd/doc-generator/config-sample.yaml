@@ -2,6 +2,7 @@ siteName: "a doc site"
 description: "your docs"
 baseURL: ""
 githubRepo: "your-org/your-repo"
+GATrackingID: ""
 defaultOrder:
   - "CatI"
   - "CatII"

@@ -69,6 +69,13 @@ func processMarkdown(filePath, baseDir string, config SiteConfig) (Page, error) 
 		return Page{}, err
 	}
 
+	// Get the directory path relative to docs root
+	dirPath := filepath.Dir(relPath)
+	if dirPath == "." {
+		dirPath = ""
+	}
+	dirPath = filepath.ToSlash(dirPath)
+
 	urlPath := strings.TrimSuffix(relPath, ".md") + ".html"
 	// Handle README files
 	if strings.HasSuffix(urlPath, "README.html") {
@@ -89,5 +96,6 @@ func processMarkdown(filePath, baseDir string, config SiteConfig) (Page, error) 
 		Content:     template.HTML(buf.String()),
 		RelPath:     relPath,
 		URLPath:     urlPath,
+		DirPath:     dirPath,
 	}, nil
 }

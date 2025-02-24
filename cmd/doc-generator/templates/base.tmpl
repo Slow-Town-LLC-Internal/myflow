@@ -9,6 +9,16 @@
     <link rel="stylesheet" href="{{ assetPath "/css/styles.css" }}">
     <link rel="stylesheet" href="{{ assetPath "/css/prism.css" }}">
     <link rel="icon" href="{{ assetPath "/favicon.ico" }}">
+    {{ if .Config.GATrackingID }}
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id={{ .Config.GATrackingID }}"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', '{{ .Config.GATrackingID }}');
+    </script>
+    {{ end }}
 </head>
 <body>
     <div class="page-container">
