@@ -2,6 +2,7 @@ siteName: "me@425"
 description: "Too early"
 baseURL: ""
 githubRepo: "Slow-Town-LLC-Internal/myflow"
+GATrackingID: "G-8F14DZKGLE"
 defaultOrder:
   - "Informations générales"
   - "Français"

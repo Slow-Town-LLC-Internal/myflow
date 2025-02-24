@@ -151,6 +151,7 @@ func processAllPages(docsPath string, config SiteConfig) ([]Page, error) {
 }
 
 func buildSiteStructure(allPages []Page, config SiteConfig) Site {
+	// Build sections (original implementation)
 	sections := make(map[string][]Page)
 	for _, page := range allPages {
 		if page.Section == "" {
@@ -159,11 +160,25 @@ func buildSiteStructure(allPages []Page, config SiteConfig) Site {
 		sections[page.Section] = append(sections[page.Section], page)
 	}
 
+	// Build directory tree
+	dirTree := buildDirTree(allPages)
+	
+	// Build tag map
+	tagMap := make(map[string][]Page)
+	for _, page := range allPages {
+		for _, tag := range page.Tags {
+			tagMap[tag] = append(tagMap[tag], page)
+		}
+	}
+
+	// Create site with the new structure
 	site := Site{
 		Pages:    allPages,
 		Sections: sections,
 		Config:   config,
-		NavTree:  buildNavTree(sections, config),
+		NavTree:  buildNavTree(sections, dirTree, tagMap, config),
+		DirTree:  dirTree,
+		TagMap:   tagMap,
 	}
 
 	// Generate breadcrumbs
@@ -172,6 +187,62 @@ func buildSiteStructure(allPages []Page, config SiteConfig) Site {
 	}
 
 	return site
+}
+
+// buildDirTree creates a hierarchical directory structure from pages
+func buildDirTree(pages []Page) *Directory {
+	root := &Directory{
+		Name: "Home",
+		Path: "",
+	}
+	
+	dirMap := make(map[string]*Directory)
+	dirMap[""] = root
+	
+	// First pass: create all directories
+	for _, page := range pages {
+		parts := strings.Split(page.DirPath, "/")
+		current := ""
+		parent := ""
+		
+		// Create each directory in the path if it doesn't exist
+		for _, part := range parts {
+			if part == "" {
+				continue
+			}
+			
+			parent = current
+			if current != "" {
+				current = current + "/" + part
+			} else {
+				current = part
+			}
+			
+			if _, exists := dirMap[current]; !exists {
+				dir := &Directory{
+					Name: part,
+					Path: current,
+				}
+				
+				// Link to parent
+				if parentDir, ok := dirMap[parent]; ok {
+					dir.ParentDir = parentDir
+					parentDir.SubDirs = append(parentDir.SubDirs, dir)
+				}
+				
+				dirMap[current] = dir
+			}
+		}
+	}
+	
+	// Second pass: add pages to their directories
+	for _, page := range pages {
+		if dir, ok := dirMap[page.DirPath]; ok {
+			dir.Pages = append(dir.Pages, page)
+		}
+	}
+	
+	return root
 }
 
 func renderPages(site Site, templatesPath, outputDir string) error {
