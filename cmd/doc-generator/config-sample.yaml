@@ -1,0 +1,8 @@
+siteName: "a doc site"
+description: "your docs"
+baseURL: ""
+githubRepo: "your-org/your-repo"
+defaultOrder:
+  - "CatI"
+  - "CatII"
+  - "CatIII"
