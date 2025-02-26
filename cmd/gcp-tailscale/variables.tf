@@ -25,7 +25,7 @@ variable "ssh_public_key_path" {
 variable "allowed_ssh_cidr" {
   description = "IP CIDR range allowed for SSH access"
   type        = string
-  default     = "0.0.0.0/0"  # Warning: This allows SSH from anywhere, consider restricting to your IP
+  default     = "0.0.0.0/0" # Warning: This allows SSH from anywhere, consider restricting to your IP
 }
 
 variable "gcp_project_id" {
