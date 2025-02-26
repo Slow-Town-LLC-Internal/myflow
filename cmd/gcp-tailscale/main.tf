@@ -10,10 +10,9 @@ terraform {
 # Configure the Google Cloud provider - using existing gcloud authentication
 provider "google" {
   # Empty configuration will use your existing gcloud CLI authentication
-  # and inherit project, region, and zone from your gcloud config
+  # But we'll specify the project explicitly
   project = var.gcp_project_id
   zone = var.gcp_zone
-
 }
 
 # Create VPC network with custom firewall rules
@@ -28,7 +27,6 @@ resource "google_compute_firewall" "allow_ssh" {
   name    = "allow-ssh"
   network = google_compute_network.tailscale_network.name
   project = var.gcp_project_id
-
 
   allow {
     protocol = "tcp"
@@ -48,6 +46,8 @@ resource "google_compute_firewall" "allow_icmp" {
   allow {
     protocol = "icmp"
   }
+
+  # Allow ICMP from anywhere (can be restricted if needed)
   source_ranges = ["0.0.0.0/0"]
 }
 
@@ -56,11 +56,8 @@ resource "google_compute_instance" "tailscale_node" {
   name         = "tailscale-node"
   machine_type = "e2-micro"  # Cheapest option sufficient for Tailscale exit node
   tags         = ["tailscale", "no-public-ports"]
-  project = var.gcp_project_id
-  zone = var.gcp_zone
-
-
-
+  project      = var.gcp_project_id
+  zone         = var.gcp_zone
 
   boot_disk {
     initialize_params {
@@ -83,27 +80,36 @@ resource "google_compute_instance" "tailscale_node" {
     ssh-keys = "${var.ssh_username}:${file(var.ssh_public_key_path)}"
   }
 
-  # Prepare script variables
+  # Install Tailscale using startup script - improved version
   metadata_startup_script = <<-EOT
     #!/bin/bash
 
-    # Variables passed from Terraform
-    tailscale_auth_key="$${var.tailscale_auth_key}"
-    tailscale_hostname="$${var.tailscale_hostname}"
+    # Set variables using environment variables
+    tailscale_auth_key="${var.tailscale_auth_key}"
+    tailscale_hostname="${var.tailscale_hostname}"
+
+    # Create a log file
+    exec > >(tee /var/log/tailscale-setup.log) 2>&1
+
+    echo "Starting Tailscale setup script at $$(date)"
 
     # Update system
-    apt-get update && apt-get upgrade -y
+    echo "Updating system packages..."
+    apt-get update
 
     # Install required packages
+    echo "Installing required packages..."
     apt-get install -y curl iptables-persistent apt-transport-https gnupg
 
     # Secure SSH configuration
+    echo "Configuring SSH..."
     sed -i 's/PermitRootLogin yes/PermitRootLogin no/' /etc/ssh/sshd_config
     sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config
     sed -i 's/#PubkeyAuthentication yes/PubkeyAuthentication yes/' /etc/ssh/sshd_config
     systemctl restart sshd
 
     # Configure firewall (iptables)
+    echo "Configuring firewall..."
     # Flush existing rules
     iptables -F
 
@@ -128,25 +134,31 @@ resource "google_compute_instance" "tailscale_node" {
     netfilter-persistent save
 
     # Add Tailscale repository
-    curl -fsSL https://pkgs.tailscale.com/stable/debian/bullseye.noarmor.gpg | sudo tee /usr/share/keyrings/tailscale-archive-keyring.gpg >/dev/null
-    curl -fsSL https://pkgs.tailscale.com/stable/debian/bullseye.tailscale-keyring.list | sudo tee /etc/apt/sources.list.d/tailscale.list
+    echo "Adding Tailscale repository..."
+    curl -fsSL https://pkgs.tailscale.com/stable/debian/bullseye.noarmor.gpg | tee /usr/share/keyrings/tailscale-archive-keyring.gpg >/dev/null
+    curl -fsSL https://pkgs.tailscale.com/stable/debian/bullseye.tailscale-keyring.list | tee /etc/apt/sources.list.d/tailscale.list
 
     # Update and install Tailscale
+    echo "Installing Tailscale..."
     apt-get update
     apt-get install -y tailscale
 
     # Enable IP forwarding for exit node functionality
+    echo "Enabling IP forwarding..."
     echo 'net.ipv4.ip_forward = 1' | tee -a /etc/sysctl.conf
     echo 'net.ipv6.conf.all.forwarding = 1' | tee -a /etc/sysctl.conf
     sysctl -p /etc/sysctl.conf
 
     # Set up Tailscale as an exit node using provided pre-auth key
-    tailscale up --authkey="$${tailscale_auth_key}" --hostname="$${tailscale_hostname}" --advertise-exit-node
+    echo "Configuring Tailscale as exit node..."
+    tailscale up --authkey="$$tailscale_auth_key" --hostname="$$tailscale_hostname" --advertise-exit-node
 
     # Configure Tailscale to start on boot
+    echo "Enabling Tailscale service..."
     systemctl enable tailscaled
 
     # Set up automatic updates for security
+    echo "Configuring automatic updates..."
     apt-get install -y unattended-upgrades
     cat > /etc/apt/apt.conf.d/20auto-upgrades <<EOF
 APT::Periodic::Update-Package-Lists "1";
@@ -172,7 +184,14 @@ EOF
     # Enable automatic updates
     systemctl enable unattended-upgrades
     systemctl start unattended-upgrades
+
+    # Verify Tailscale status
+    echo "Tailscale setup complete. Current status:"
+    tailscale status
+
+    echo "Setup completed at $$(date)"
   EOT
+
 
   # Shielded VM settings for enhanced security
   shielded_instance_config {
