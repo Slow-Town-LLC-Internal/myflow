@@ -6,6 +6,7 @@ import (
 	"html/template"
 	"log"
 	"os"
+  "io"
 	"path/filepath"
 	"strings"
 	"time"
@@ -107,6 +108,11 @@ func generateSite(rootDir, cmdPath string, config SiteConfig) error {
 		return fmt.Errorf("failed to copy static assets: %v", err)
 	}
 
+  // Copy images directory
+	if err := copyImagesDirectory(rootDir, outputDir); err != nil {
+		return fmt.Errorf("failed to copy images directory: %v", err)
+	}
+
 	// Process markdown files
 	docsPath := filepath.Join(rootDir, docsDir)
 	allPages, err := processAllPages(docsPath, config)
@@ -162,7 +168,7 @@ func buildSiteStructure(allPages []Page, config SiteConfig) Site {
 
 	// Build directory tree
 	dirTree := buildDirTree(allPages)
-	
+
 	// Build tag map
 	tagMap := make(map[string][]Page)
 	for _, page := range allPages {
@@ -195,53 +201,53 @@ func buildDirTree(pages []Page) *Directory {
 		Name: "Home",
 		Path: "",
 	}
-	
+
 	dirMap := make(map[string]*Directory)
 	dirMap[""] = root
-	
+
 	// First pass: create all directories
 	for _, page := range pages {
 		parts := strings.Split(page.DirPath, "/")
 		current := ""
 		parent := ""
-		
+
 		// Create each directory in the path if it doesn't exist
 		for _, part := range parts {
 			if part == "" {
 				continue
 			}
-			
+
 			parent = current
 			if current != "" {
 				current = current + "/" + part
 			} else {
 				current = part
 			}
-			
+
 			if _, exists := dirMap[current]; !exists {
 				dir := &Directory{
 					Name: part,
 					Path: current,
 				}
-				
+
 				// Link to parent
 				if parentDir, ok := dirMap[parent]; ok {
 					dir.ParentDir = parentDir
 					parentDir.SubDirs = append(parentDir.SubDirs, dir)
 				}
-				
+
 				dirMap[current] = dir
 			}
 		}
 	}
-	
+
 	// Second pass: add pages to their directories
 	for _, page := range pages {
 		if dir, ok := dirMap[page.DirPath]; ok {
 			dir.Pages = append(dir.Pages, page)
 		}
 	}
-	
+
 	return root
 }
 
@@ -296,6 +302,75 @@ func renderPages(site Site, templatesPath, outputDir string) error {
 
 	return nil
 }
+
+func copyImagesDirectory(rootDir, outputDir string) error {
+	imagesSourceDir := filepath.Join(rootDir, "docs", "images")
+	imagesDestDir := filepath.Join(outputDir, "images")
+
+	// Check if source images directory exists
+	if _, err := os.Stat(imagesSourceDir); os.IsNotExist(err) {
+		// Create empty directory if it doesn't exist
+		err := os.MkdirAll(imagesDestDir, 0755)
+		if err != nil {
+			return fmt.Errorf("failed to create images directory: %v", err)
+		}
+		return nil
+	}
+
+	// Create destination directory
+	if err := os.MkdirAll(imagesDestDir, 0755); err != nil {
+		return fmt.Errorf("failed to create images directory: %v", err)
+	}
+
+	// Copy all files from source to destination
+	err := filepath.Walk(imagesSourceDir, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		// Skip directories
+		if info.IsDir() {
+			return nil
+		}
+
+		// Get relative path
+		relPath, err := filepath.Rel(imagesSourceDir, path)
+		if err != nil {
+			return fmt.Errorf("failed to get relative path: %v", err)
+		}
+
+		// Calculate destination path
+		destPath := filepath.Join(imagesDestDir, relPath)
+
+		// Ensure parent directory exists
+		if err := os.MkdirAll(filepath.Dir(destPath), 0755); err != nil {
+			return fmt.Errorf("failed to create parent directory: %v", err)
+		}
+
+		// Copy file
+		sourceFile, err := os.Open(path)
+		if err != nil {
+			return fmt.Errorf("failed to open source file: %v", err)
+		}
+		defer sourceFile.Close()
+
+		destFile, err := os.Create(destPath)
+		if err != nil {
+			return fmt.Errorf("failed to create destination file: %v", err)
+		}
+		defer destFile.Close()
+
+		_, err = io.Copy(destFile, sourceFile)
+		if err != nil {
+			return fmt.Errorf("failed to copy file: %v", err)
+		}
+
+		return nil
+	})
+
+	return err
+}
+
 
 func generateIndexPage(site Site, tmpl *template.Template, outputDir string) error {
 	indexPage := findIndexPage(site.Pages)
