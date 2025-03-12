@@ -36,24 +36,23 @@ jobs:
           cd cmd/doc-generator
           go build -o doc-generator
 
+      - name: Create images directory
+        run: |
+          # Create images directory in docs if it doesn't exist
+          mkdir -p docs/images
+
       - name: Generate documentation
         run: |
           cd cmd/doc-generator
           # Remove the -base-url flag since we're handling the path physically
           ./doc-generator -root ${{ github.workspace }}
 
-      - name: Setup static files
+      - name: Verify output structure
         run: |
-          # Create directories if they don't exist
-          mkdir -p public/css
-          mkdir -p public/js
-          mkdir -p public/images
-
-          # Move files if they exist (without the myflow subdirectory)
-          [ -f public/index.html ] || touch public/index.html
-          
-          # No need to create a redirect since we're at the root level
-          ls -la public/
+          echo "Listing public directory structure:"
+          find public -type d | sort
+          echo "Checking for images directory:"
+          ls -la public/images || echo "Images directory not found!"
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
