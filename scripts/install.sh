@@ -22,7 +22,7 @@ setup_env() {
     else
         log "Detected Linux environment"
         PACKAGE_MANAGER="apt"
-        PYTHON_VENV_PATH="/home/vagrant/adminvenv"
+        PYTHON_VENV_PATH="/home/arbeitandy/adminvenv"
         INSTALL_CMD="sudo apt-get install -y"
 
         # Add repositories for Linux
@@ -106,9 +106,9 @@ setup_languages() {
         fi
     fi
 
-    go install github.com/charmbracelet/glow@latest
-    go install golang.org/x/tools/gopls@latest
-    go install github.com/ipinfo/cli/ipinfo@latest
+    /usr/local/go/bin/go install github.com/charmbracelet/glow@latest
+    /usr/local/go/bin/go install golang.org/x/tools/gopls@latest
+    /usr/local/go/bin/go install github.com/ipinfo/cli/ipinfo@latest
 
     # Node.js
     if ! command -v nvm &> /dev/null; then
@@ -181,13 +181,13 @@ setup_db() {
       fi
 
       # Configure PostgreSQL to listen on all interfaces
-      sudo sed -i "s/#listen_addresses = 'localhost'/listen_addresses = '*'/" /etc/postgresql/14/main/postgresql.conf
+      sudo sed -i "s/#listen_addresses = 'localhost'/listen_addresses = '*'/" /etc/postgresql/16/main/postgresql.conf
       # Allow connections from host machine
-      if ! grep -q "10.0.2.2/32" /etc/postgresql/14/main/pg_hba.conf; then
-          echo "host    all             all             10.0.2.2/32            scram-sha-256" | sudo tee -a /etc/postgresql/14/main/pg_hba.conf
+      if ! grep -q "10.0.2.2/32" /etc/postgresql/16/main/pg_hba.conf; then
+          echo "host    all             all             10.0.2.2/32            scram-sha-256" | sudo tee -a /etc/postgresql/16/main/pg_hba.conf
       fi
-      if ! grep -q "192.168.56.0/24" /etc/postgresql/14/main/pg_hba.conf; then
-          echo "host    all             all             192.168.56.0/24        scram-sha-256" | sudo tee -a /etc/postgresql/14/main/pg_hba.conf
+      if ! grep -q "192.168.56.0/24" /etc/postgresql/16/main/pg_hba.conf; then
+          echo "host    all             all             192.168.56.0/24        scram-sha-256" | sudo tee -a /etc/postgresql/16/main/pg_hba.conf
       fi
 
       # Restart PostgreSQL
@@ -234,9 +234,9 @@ os_specific_config() {
 main() {
     log "Starting installation..."
     setup_env
-    install_basic_tools
-    setup_languages
-    setup_dotfiles
+    #install_basic_tools
+    #setup_languages
+    #setup_dotfiles
     setup_python_venv
     setup_db
     os_specific_config
