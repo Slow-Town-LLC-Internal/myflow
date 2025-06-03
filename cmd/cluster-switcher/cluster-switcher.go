@@ -26,6 +26,7 @@ type ClusterSwitcher struct {
 	homeDir        string
 	awsConfigPath  string
 	kubeconfigPath string
+	kubeconfigDir  string // New field for the config directory
 	configPath     string
 	config         *Config
 }
@@ -45,6 +46,7 @@ func NewClusterSwitcher(configPath string) (*ClusterSwitcher, error) {
 		homeDir:        homeDir,
 		awsConfigPath:  filepath.Join(homeDir, ".aws", "config"),
 		kubeconfigPath: filepath.Join(homeDir, ".kube", "config"),
+		kubeconfigDir:  filepath.Join(homeDir, ".kube", "configs"), // New directory structure
 		configPath:     configPath,
 	}
 
@@ -100,6 +102,21 @@ func runCommand(name string, args ...string) error {
 	return cmd.Run()
 }
 
+// runCommandWithEnv executes a command with environment variables
+func runCommandWithEnv(envVars map[string]string, name string, args ...string) error {
+	cmd := exec.Command(name, args...)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	
+	// Copy current environment and add our variables
+	cmd.Env = os.Environ()
+	for key, value := range envVars {
+		cmd.Env = append(cmd.Env, fmt.Sprintf("%s=%s", key, value))
+	}
+	
+	return cmd.Run()
+}
+
 // verifyAWSSession checks if the AWS SSO session is valid
 func (cs *ClusterSwitcher) verifyAWSSession(profile string) error {
 	cmd := exec.Command("aws", "sts", "get-caller-identity", "--profile", profile)
@@ -112,10 +129,21 @@ func (cs *ClusterSwitcher) verifyAWSSession(profile string) error {
 	return nil
 }
 
+// getKubeconfigPath returns the kubeconfig path for the given environment
+func (cs *ClusterSwitcher) getKubeconfigPath(env string) string {
+	return filepath.Join(cs.kubeconfigDir, fmt.Sprintf("eks-%s", env), "config")
+}
+
+// ensureKubeconfigDir ensures the kubeconfig directory exists for the environment
+func (cs *ClusterSwitcher) ensureKubeconfigDir(env string) error {
+	dirPath := filepath.Join(cs.kubeconfigDir, fmt.Sprintf("eks-%s", env))
+	return os.MkdirAll(dirPath, 0755)
+}
+
 // SwitchCluster switches to the specified environment cluster
 func (cs *ClusterSwitcher) SwitchCluster(env string) error {
-	if env != "prd" && env != "stg" {
-		return fmt.Errorf("environment must be 'prd' or 'stg'")
+	if env != "prd" && env != "stg" && env != "dev" { // Added dev support
+		return fmt.Errorf("environment must be 'dev', 'stg' or 'prd'")
 	}
 
 	if err := cs.validateConfig(env); err != nil {
@@ -129,33 +157,56 @@ func (cs *ClusterSwitcher) SwitchCluster(env string) error {
 		return err
 	}
 
-	// Update kubeconfig
-	if err := runCommand("aws", "eks", "update-kubeconfig",
+	// Ensure kubeconfig directory exists
+	if err := cs.ensureKubeconfigDir(env); err != nil {
+		return fmt.Errorf("failed to create kubeconfig directory: %v", err)
+	}
+
+	// Get the environment-specific kubeconfig path
+	kubeconfigPath := cs.getKubeconfigPath(env)
+
+	// Update kubeconfig with environment variable
+	envVars := map[string]string{
+		"KUBECONFIG": kubeconfigPath,
+	}
+	
+	if err := runCommandWithEnv(envVars, "aws", "eks", "update-kubeconfig",
 		"--name", envConfig.EKSCluster,
 		"--profile", envConfig.AWSProfile,
-		"--region", envConfig.EKSRegion); err != nil {
+		"--region", envConfig.EKSRegion,
+		"--alias", fmt.Sprintf("eks-%s", env)); err != nil {
 		return fmt.Errorf("failed to update kubeconfig: %v", err)
 	}
 
-	// Set AWS_PROFILE environment variable
+	// Set environment variables
 	if err := os.Setenv("AWS_PROFILE", envConfig.AWSProfile); err != nil {
 		return fmt.Errorf("failed to set AWS_PROFILE: %v", err)
+	}
+	
+	if err := os.Setenv("KUBECONFIG", kubeconfigPath); err != nil {
+		return fmt.Errorf("failed to set KUBECONFIG: %v", err)
 	}
 
 	fmt.Printf("Successfully switched to %s cluster: %s\n", env, envConfig.EKSCluster)
 	fmt.Printf("AWS_PROFILE environment variable set to: %s\n", envConfig.AWSProfile)
+	fmt.Printf("KUBECONFIG environment variable set to: %s\n", kubeconfigPath)
 
 	// Show current context
-	if err := runCommand("kubectl", "config", "current-context"); err != nil {
+	if err := runCommandWithEnv(envVars, "kubectl", "config", "current-context"); err != nil {
 		return fmt.Errorf("failed to get current context: %v", err)
 	}
+
+	// Export commands for manual shell usage
+	fmt.Printf("\nTo use this configuration in your current shell, run:\n")
+	fmt.Printf("export AWS_PROFILE=%s\n", envConfig.AWSProfile)
+	fmt.Printf("export KUBECONFIG=%s\n", kubeconfigPath)
 
 	return nil
 }
 
 func main() {
-	if len(os.Args) != 2 || (os.Args[1] != "prd" && os.Args[1] != "stg") {
-		fmt.Println("Usage: cluster-switcher <prd|stg>")
+	if len(os.Args) != 2 || (os.Args[1] != "dev" && os.Args[1] != "prd" && os.Args[1] != "stg") {
+		fmt.Println("Usage: cluster-switcher <dev|stg|prd>")
 		os.Exit(1)
 	}
 
