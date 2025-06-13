@@ -1,0 +1,214 @@
+#!/bin/bash
+
+: "
+
+Usage:
+    kubectl rds-debug
+    kubectl rds-debug -c 'SELECT * FROM users LIMIT 5;'
+
+-- DATABASE NAVIGATION
+\l                                              -- List all databases
+\c database_name                                -- Connect to database
+SELECT current_database();                      -- Show current database
+\conninfo                                       -- Show connection info
+
+-- SCHEMA COMMANDS
+\dn                                             -- List all schemas
+SELECT current_schema();                        -- Show current schema
+SET search_path TO schema_name;                 -- Set default schema
+SHOW search_path;                               -- Show current search path
+
+-- TABLE COMMANDS
+\dt                                             -- List tables in current schema
+\dt *.*                                         -- List all tables in all schemas
+\dt schema_name.*                               -- List tables in specific schema
+\d table_name                                   -- Describe table structure
+\d+ table_name                                  -- Describe table (detailed)
+
+-- ROW COUNTS
+SELECT COUNT(*) FROM table_name;                -- Count rows in a table
+SELECT schemaname, tablename, n_live_tup as row_count FROM
+pg_stat_user_tables ORDER BY n_live_tup DESC;   -- All table row counts
+
+-- TABLE SIZES
+SELECT schemaname AS schema, tablename AS table,
+pg_size_pretty(pg_total_relation_size(schemaname||'.'||tablename)) AS total_size,
+pg_size_pretty(pg_relation_size(schemaname||'.'||tablename)) AS data_size FROM
+pg_tables WHERE schemaname NOT IN ('pg_catalog', 'information_schema')
+ORDER BY pg_total_relation_size(schemaname||'.'||tablename) DESC;
+
+-- DATA INSPECTION
+SELECT * FROM table_name LIMIT 10;                      -- First 10 rows
+SELECT * FROM table_name ORDER BY RANDOM() LIMIT 10;    -- Random sample
+SELECT COUNT(*) as total_rows, COUNT(DISTINCT column_name) as unique_values FROM table_name; -- Basic stats
+
+-- OTHER OBJECTS
+\du                                             -- List users
+\di                                             -- List indexes
+\dv                                             -- List views
+\df                                             -- List functions
+\dp table_name                                  -- Show table permissions
+
+-- UTILITIES
+\?                                              -- List all psql commands
+\h                                              -- List all SQL commands
+\timing                                         -- Toggle query execution time
+\x                                              -- Toggle expanded display
+\q                                              -- Quit psql
+
+-- DATABASE INFO
+SELECT pg_size_pretty(pg_database_size(current_database())); -- Database size
+SELECT pid, age(clock_timestamp(), query_start), usename, query FROM pg_stat_activity WHERE query != '<IDLE>' ORDER BY query_start DESC; -- Running queries
+
+-- DIAGNOSTICS
+-- Database size
+
+SELECT pg_database_size(current_database());
+SELECT pg_size_pretty(pg_database_size(current_database()));
+
+-- All table sizes in current database
+SELECT
+    relname AS 'Table',
+    pg_size_pretty(pg_total_relation_size(relid)) AS 'Size'
+FROM pg_catalog.pg_statio_user_tables
+ORDER BY pg_total_relation_size(relid) DESC;
+
+-- Currently running queries
+
+SELECT pid, age(clock_timestamp(), query_start), usename, query
+FROM pg_stat_activity
+WHERE query != '<IDLE>' AND query NOT ILIKE '%pg_stat_activity%'
+ORDER BY query_start DESC;
+
+-- Kill a query
+SELECT pg_cancel_backend(pid);
+-- or force kill
+SELECT pg_terminate_backend(pid);
+
+-- Save query results to file
+\o /tmp/output.txt
+SELECT * FROM table_name;
+\o
+
+-- Execute commands from file
+\i /path/to/script.sql
+
+-- Enable query execution time
+\timing on
+
+-- Pretty formatting for large results
+\pset pager on
+\pset format wrapped
+
+
+
+-- Search for tables containing specific column
+SELECT table_schema, table_name
+FROM information_schema.columns
+WHERE column_name = 'user_id';
+
+
+"
+
+
+
+
+# Default values
+
+
+AWS_PROFILE="${AWS_PROFILE:-stg-admin}"
+ENVIRONMENT="${ENVIRONMENT:-$(echo "$AWS_PROFILE" | sed 's/.*-\(.*\)-.*/\1/')}"
+
+SSM_PARAM="${SSM_PARAM:-/path1/${ENVIRONMENT}/path2}"
+AWS_REGION="${AWS_REGION:-us-central-1}"
+NAMESPACE="${NAMESPACE:-default}"
+
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    -p|--parameter)
+      SSM_PARAM="$2"
+      shift 2
+      ;;
+    -r|--region)
+      AWS_REGION="$2"
+      shift 2
+      ;;
+    -n|--namespace)
+      NAMESPACE="$2"
+      shift 2
+      ;;
+    -c|--command)
+      PSQL_COMMAND="$2"
+      shift 2
+      ;;
+    *)
+      echo "Unknown option: $1"
+      echo "Usage: $0 [-p SSM_PARAMETER] [-r AWS_REGION] [-n K8S_NAMESPACE] [-c SQL_COMMAND]"
+      exit 1
+      ;;
+  esac
+done
+
+# Get DATABASE_URL from SSM
+echo "Fetching database URL from SSM parameter: $SSM_PARAM..."
+DB_URL=$(aws ssm get-parameter \
+  --with-decryption \
+  --query "Parameter.Value" \
+  --output text \
+  --region "$AWS_REGION" \
+  --name "$SSM_PARAM")
+
+if [ -z "$DB_URL" ]; then
+  echo "Failed to retrieve DATABASE_URL from SSM"
+  exit 1
+fi
+
+# Extract schema if present
+# SCHEMA=$(echo "$DB_URL" | grep -oP '(?<=schema=)[^&]*' || true)
+SCHEMA=$(echo "$DB_URL" | sed -n 's/.*schema=\([^&]*\).*/\1/p')
+
+
+# Strip out non-psql parameters
+DB_URL_CLEAN=$(echo "$DB_URL" | sed 's/\?.*//')
+
+# Extract connection info for display
+DB_HOST=$(echo "$DB_URL" | sed -n 's/.*@\([^:\/]*\).*/\1/p')
+DB_NAME=$(echo "$DB_URL" | sed -n 's/.*\/\([^?]*\).*/\1/p')
+echo "Connecting to database: $DB_NAME on $DB_HOST..."
+[ -n "$SCHEMA" ] && echo "Using schema: $SCHEMA"
+
+# Build init command if schema is specified
+INIT_CMD=""
+[ -n "$SCHEMA" ] && INIT_CMD="SET search_path TO $SCHEMA;"
+
+# Connect to database
+if [ -n "$PSQL_COMMAND" ]; then
+  # Execute command and exit
+  FULL_CMD="$INIT_CMD $PSQL_COMMAND"
+  kubectl run psql-bastion-$RANDOM \
+    --rm -it \
+    --image=postgres:16 \
+    --restart=Never \
+    --namespace="$NAMESPACE" \
+    -- psql "$DB_URL_CLEAN" -c "$FULL_CMD"
+else
+  # Interactive session with schema set
+  if [ -n "$SCHEMA" ]; then
+    # Use PGOPTIONS to set search_path
+    kubectl run psql-bastion-$RANDOM \
+      --rm -it \
+      --image=postgres:16 \
+      --restart=Never \
+      --namespace="$NAMESPACE" \
+      --env="PGOPTIONS=-c search_path=$SCHEMA" \
+      -- psql "$DB_URL_CLEAN"
+  else
+    kubectl run psql-bastion-$RANDOM \
+      --rm -it \
+      --image=postgres:16 \
+      --restart=Never \
+      --namespace="$NAMESPACE" \
+      -- psql "$DB_URL_CLEAN"
+  fi
+fi
